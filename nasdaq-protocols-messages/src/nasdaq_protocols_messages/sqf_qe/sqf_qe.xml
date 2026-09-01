@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+    <enums-root>
+        <enum id="QuoteState" type="char_iso-8859-1">
+            <value name="Live" description="Quote is live">L</value>
+            <value name="Dead" description="Quote is dead">D</value>
+        </enum>
+
+        <enum id="RejectReason" type="char_iso-8859-1">
+            <value name="InvalidPrice" description="Price is invalid">P</value>
+            <value name="InvalidQuantity" description="Quantity is invalid">Q</value>
+            <value name="ClosedMarket" description="Market is closed">C</value>
+        </enum>
+    </enums-root>
+
+    <records-root>
+        <!-- Tidak dipakai untuk versi ini -->
+    </records-root>
+
+    <messages-root>
+        <!-- ===== Incoming: client -> server ===== -->
+        <message id="EnterQuote" message-id="81" direction="incoming">
+            <fields>
+                <field name="token" type="int_8_be"/>
+                <field name="stockCode" type="str_iso-8859-1_n" length="10"/>
+                <field name="bidPrice" type="uint_4_be"/>
+                <field name="bidQuantity" type="uint_4_be"/>
+                <field name="askPrice" type="uint_4_be"/>
+                <field name="askQuantity" type="uint_4_be"/>
+                <field name="account" type="str_iso-8859-1_n" length="16"/>
+            </fields>
+        </message>
+
+        <message id="PurgeQuotes" message-id="80" direction="incoming">
+            <fields>
+                <field name="token" type="int_8_be"/>
+                <field name="stockCode" type="str_iso-8859-1_n" length="10"/>
+            </fields>
+        </message>
+
+        <!-- ===== Outgoing: server -> client ===== -->
+        <message id="QuoteAccepted" message-id="65" direction="outgoing">
+            <fields>
+                <field name="token" type="int_8_be"/>
+                <field name="stockCode" type="str_iso-8859-1_n" length="10"/>
+                <field name="bidPrice" type="uint_4_be"/>
+                <field name="bidQuantity" type="uint_4_be"/>
+                <field name="askPrice" type="uint_4_be"/>
+                <field name="askQuantity" type="uint_4_be"/>
+                <field name="quoteState" type="enum:QuoteState"/>
+            </fields>
+        </message>
+
+        <message id="QuoteRejected" message-id="74" direction="outgoing">
+            <fields>
+                <field name="token" type="int_8_be"/>
+                <field name="reason" type="enum:RejectReason"/>
+            </fields>
+        </message>
+
+        <message id="QuoteExecuted" message-id="69" direction="outgoing">
+            <fields>
+                <field name="token" type="int_8_be"/>
+                <field name="executedQuantity" type="uint_4_be"/>
+                <field name="executionPrice" type="uint_4_be"/>
+                <field name="matchNumber" type="uint_8_be"/>
+            </fields>
+        </message>
+    </messages-root>
+</root>

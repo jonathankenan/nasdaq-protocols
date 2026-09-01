@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+    <enums-root>
+        <enum id="ItchSide" type="char_iso-8859-1">
+            <value name="Buy" description="Buy">B</value>
+            <value name="Sell" description="Sell">S</value>
+        </enum>
+
+        <enum id="SystemEventCode" type="char_iso-8859-1">
+            <value name="StartOfMessages" description="Start of day messages">O</value>
+            <value name="StartOfMarket" description="Start of market hours">S</value>
+            <value name="EndOfMarket" description="End of market hours">M</value>
+            <value name="EndOfMessages" description="End of day messages">C</value>
+        </enum>
+
+        <enum id="TradingState" type="char_iso-8859-1">
+            <value name="Halted" description="Trading halted">H</value>
+            <value name="Trading" description="Trading normally">T</value>
+            <value name="Paused" description="Trading paused">P</value>
+        </enum>
+    </enums-root>
+
+    <records-root>
+        <!-- Tidak dipakai untuk versi ini -->
+    </records-root>
+
+    <messages-root>
+        <!-- ===== Outgoing only: server -> client (market data feed) ===== -->
+        <message id="SystemEvent" message-id="83" direction="outgoing">
+            <fields>
+                <field name="timestamp" type="uint_8_be"/>
+                <field name="eventCode" type="enum:SystemEventCode"/>
+            </fields>
+        </message>
+
+        <message id="StockTradingAction" message-id="72" direction="outgoing">
+            <fields>
+                <field name="timestamp" type="uint_8_be"/>
+                <field name="stockCode" type="str_iso-8859-1_n" length="10"/>
+                <field name="tradingState" type="enum:TradingState"/>
+            </fields>
+        </message>
+
+        <message id="AddOrder" message-id="65" direction="outgoing">
+            <fields>
+                <field name="timestamp" type="uint_8_be"/>
+                <field name="orderReferenceNumber" type="uint_8_be"/>
+                <field name="stockCode" type="str_iso-8859-1_n" length="10"/>
+                <field name="side" type="enum:ItchSide"/>
+                <field name="quantity" type="uint_4_be"/>
+                <field name="price" type="uint_4_be"/>
+            </fields>
+        </message>
+
+        <message id="OrderExecuted" message-id="69" direction="outgoing">
+            <fields>
+                <field name="timestamp" type="uint_8_be"/>
+                <field name="orderReferenceNumber" type="uint_8_be"/>
+                <field name="executedQuantity" type="uint_4_be"/>
+                <field name="matchNumber" type="uint_8_be"/>
+            </fields>
+        </message>
+
+        <message id="OrderCancel" message-id="88" direction="outgoing">
+            <fields>
+                <field name="timestamp" type="uint_8_be"/>
+                <field name="orderReferenceNumber" type="uint_8_be"/>
+                <field name="canceledQuantity" type="uint_4_be"/>
+            </fields>
+        </message>
+
+        <message id="OrderDelete" message-id="68" direction="outgoing">
+            <fields>
+                <field name="timestamp" type="uint_8_be"/>
+                <field name="orderReferenceNumber" type="uint_8_be"/>
+            </fields>
+        </message>
+
+        <message id="Trade" message-id="80" direction="outgoing">
+            <fields>
+                <field name="timestamp" type="uint_8_be"/>
+                <field name="stockCode" type="str_iso-8859-1_n" length="10"/>
+                <field name="side" type="enum:ItchSide"/>
+                <field name="quantity" type="uint_4_be"/>
+                <field name="price" type="uint_4_be"/>
+                <field name="matchNumber" type="uint_8_be"/>
+            </fields>
+        </message>
+    </messages-root>
+</root>

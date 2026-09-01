@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+    <enums-root>
+        <enum id="OuchSide" type="char_iso-8859-1">
+            <value name="Buy" description="Buy">B</value>
+            <value name="Sell" description="Sell">S</value>
+        </enum>
+
+        <enum id="OrderType" type="char_iso-8859-1">
+            <value name="Limit" description="Limit order">L</value>
+            <value name="Market" description="Market order">M</value>
+        </enum>
+
+        <enum id="TimeInForce" type="char_iso-8859-1">
+            <value name="Day" description="Valid for the day">0</value>
+            <value name="IOC" description="Immediate or cancel">3</value>
+            <value name="FOK" description="Fill or kill">4</value>
+        </enum>
+
+        <enum id="OrderState" type="char_iso-8859-1">
+            <value name="Live" description="Order is live">L</value>
+            <value name="Dead" description="Order is dead">D</value>
+        </enum>
+
+        <enum id="RejectReason" type="char_iso-8859-1">
+            <value name="InvalidPrice" description="Price is invalid">P</value>
+            <value name="InvalidQuantity" description="Quantity is invalid">Q</value>
+            <value name="ClosedMarket" description="Market is closed">C</value>
+        </enum>
+    </enums-root>
+
+    <records-root>
+        <!-- Tidak dipakai untuk versi ini -->
+    </records-root>
+
+    <messages-root>
+        <!-- ===== Incoming: client -> server ===== -->
+        <message id="EnterOrder" message-id="69" direction="incoming">
+            <fields>
+                <field name="token" type="int_8_be"/>
+                <field name="stockCode" type="str_iso-8859-1_n" length="10"/>
+                <field name="side" type="enum:OuchSide"/>
+                <field name="quantity" type="uint_4_be"/>
+                <field name="price" type="uint_4_be"/>
+                <field name="orderType" type="enum:OrderType"/>
+                <field name="timeInForce" type="enum:TimeInForce"/>
+                <field name="account" type="str_iso-8859-1_n" length="16"/>
+            </fields>
+        </message>
+
+        <message id="CancelOrder" message-id="88" direction="incoming">
+            <fields>
+                <field name="token" type="int_8_be"/>
+                <field name="quantity" type="uint_4_be"/>
+            </fields>
+        </message>
+
+        <message id="ReplaceOrder" message-id="85" direction="incoming">
+            <fields>
+                <field name="existingToken" type="int_8_be"/>
+                <field name="newToken" type="int_8_be"/>
+                <field name="quantity" type="uint_4_be"/>
+                <field name="price" type="uint_4_be"/>
+            </fields>
+        </message>
+
+        <!-- ===== Outgoing: server -> client ===== -->
+        <message id="OrderAccepted" message-id="65" direction="outgoing">
+            <fields>
+                <field name="token" type="int_8_be"/>
+                <field name="stockCode" type="str_iso-8859-1_n" length="10"/>
+                <field name="side" type="enum:OuchSide"/>
+                <field name="quantity" type="uint_4_be"/>
+                <field name="price" type="uint_4_be"/>
+                <field name="orderState" type="enum:OrderState"/>
+                <field name="orderReferenceNumber" type="uint_8_be"/>
+            </fields>
+        </message>
+
+        <message id="OrderRejected" message-id="74" direction="outgoing">
+            <fields>
+                <field name="token" type="int_8_be"/>
+                <field name="reason" type="enum:RejectReason"/>
+            </fields>
+        </message>
+
+        <message id="OrderExecuted" message-id="69" direction="outgoing">
+            <fields>
+                <field name="token" type="int_8_be"/>
+                <field name="executedQuantity" type="uint_4_be"/>
+                <field name="executionPrice" type="uint_4_be"/>
+                <field name="matchNumber" type="uint_8_be"/>
+            </fields>
+        </message>
+
+        <message id="OrderCanceled" message-id="67" direction="outgoing">
+            <fields>
+                <field name="token" type="int_8_be"/>
+                <field name="decrementQuantity" type="uint_4_be"/>
+            </fields>
+        </message>
+    </messages-root>
+</root>
