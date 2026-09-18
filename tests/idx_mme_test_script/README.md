@@ -10,16 +10,29 @@ menyediakan definisi pesan FIX yang sudah sesuai spesifikasi IDX
 (dibangun di atas class `Header`, `Trailer`, `DataSegment`, `Message`
 dari modul `nasdaq_protocols.fix`).
 
+## Status (update)
+
+- `nasdaq_mme_idx-0.2.0rc2.dev18+g76893a8.tar.gz` — sudah didapat, disimpan
+  di `vendor/`, sudah ter-install ke venv
+- `tests/idx_mme_helper/utils.py` — sudah didapat dari mentor
+- `test_fix_send_order_time_duration.py` dan `test_fix_send_multi_orders.py`
+  — sudah didapat dan ditaruh di `fix/`
+- Data CSV untuk kedua script di atas ada di **`tests/idx_mme_data/`**
+  (bukan di folder ini) — lihat catatan format di bawah
+- Sisanya (`test_fix_amend_message.py`, dst) masih perlu diminta ke mentor
+
 ## Prasyarat sebelum script di sini bisa jalan
 
-1. Dapatkan file `nasdaq_mme_idx-0.2.0rc2.dev18+g76893a8.tar.gz` dari mentor.
-2. Install ke venv project: `pip install nasdaq_mme_idx-0.2.0rc2.dev18+g76893a8.tar.gz`
-3. Dapatkan isi asli file `.py` test script di bawah ini dari mentor/tim
+1. ~~Dapatkan file `nasdaq_mme_idx-0.2.0rc2.dev18+g76893a8.tar.gz` dari mentor~~ — selesai
+2. ~~Install ke venv project~~ — selesai
+3. Dapatkan isi asli file `.py` test script yang masih kurang dari mentor/tim
    (isinya proprietary, tidak bisa direkonstruksi tanpa spesifikasi field
    FIX milik IDX) — cukup copy ke folder yang sesuai (fix/ atau ouch/ atau
    mme_max_conn/).
-4. Sesuaikan isi file CSV data & credential di masing-masing folder (lihat
-   contoh header yang sudah disiapkan di tiap CSV).
+4. Sesuaikan isi file CSV data & credential di `tests/idx_mme_data/`.
+   **PENTING**: fungsi pembaca CSV di `idx_mme_helper/utils.py`
+   (`load_credentials`, `load_orders`) **tidak skip baris header** — CSV
+   harus **tanpa baris judul kolom**, langsung data mentah per baris.
 
 ## Konfigurasi environment (dev3)
 
@@ -54,10 +67,10 @@ dari modul `nasdaq_protocols.fix`).
 ### fix/ — Multi Order
 - test_fix_send_order_time_duration.py — send order selama waktu tertentu (biasa untuk test MBP)
   `python -m pytest tests/idx_mme_test_script/fix/test_fix_send_order_time_duration.py`
-  data: data_order_time_window.csv, credential_time_window.csv
+  data: tests/idx_mme_data/data_order_time_window.csv, credential_time_window.csv
 - test_fix_send_multi_orders.py — send order sebanyak angka yang ditentukan
   `python -m pytest tests/idx_mme_test_script/fix/test_fix_send_multi_orders.py`
-  data: data_orders.csv, pytest_credentials_fix.csv
+  data: tests/idx_mme_data/data_orders.csv, pytest_credentials_fix.csv
 - test_fix_send_order_time_range.py — send order dengan start & end time
   `python -m pytest tests/idx_mme_test_script/fix/test_fix_send_order_time_range.py`
 
