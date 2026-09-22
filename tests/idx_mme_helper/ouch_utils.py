@@ -5,7 +5,7 @@ from tests.idx_mme_helper import utils as hlp
 
 # Helper for the OUCH test scripts, kept separate so the mentor's utils.py stays untouched.
 
-OUCH_HOST = '172.18.2.132'   # dev3
+OUCH_HOST = '172.18.2.162'   # dev6
 OUCH_PORT = 8600
 
 # UNCERTAIN: OUCH identifies an instrument by numeric orderBookId (from ITCH), not the FIX stock code -- placeholder below.

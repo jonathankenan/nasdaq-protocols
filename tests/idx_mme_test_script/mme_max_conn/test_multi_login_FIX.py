@@ -8,7 +8,7 @@ from tests.idx_mme_helper import utils as hlp
 
 LOG_FILE = hlp.setup_logging()
 
-FIX_HOST = '172.18.2.132'
+FIX_HOST = '172.18.2.162'
 FIX_PORT = '8200'
 
 @pytest.mark.asyncio

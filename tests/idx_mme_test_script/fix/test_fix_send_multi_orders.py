@@ -27,7 +27,7 @@ async def test_fix_multiple_orders():
     await asyncio.gather(*tasks)
 
 async def send_orders_for_user(user, orders):
-    fix_session = await hlp.loginFIXFromFile('172.18.2.132', '8200', user['username'], user['password'], user['sender_comp_id'])
+    fix_session = await hlp.loginFIXFromFile('172.18.2.162', '8200', user['username'], user['password'], user['sender_comp_id'])
     
     if not fix_session:
         logging.error(f"Failed to connect for user {user['username']}.")

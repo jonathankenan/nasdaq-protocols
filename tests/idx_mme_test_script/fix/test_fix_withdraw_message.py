@@ -18,7 +18,7 @@ async def test_fix_withdraw_message():
     order = orders[0]
 
     fix_session = await hlp.loginFIXFromFile(
-        '172.18.2.132', '8200', user['username'], user['password'], user['sender_comp_id']
+        '172.18.2.162', '8200', user['username'], user['password'], user['sender_comp_id']
     )
 
     if not fix_session:
