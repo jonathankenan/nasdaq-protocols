@@ -9,9 +9,9 @@ from tests.idx_mme_helper import utils as hlp
 
 LOG_FILE = hlp.setup_logging()
 
-SECURITY_SUB_TYPE = 'NEGO'   # placeholder, confirm real code with mentor
-SELLER_TRADER = 'XAJFE1'     # placeholder counterparty trader
-SELLER_FIRM = 'XA'           # placeholder counterparty firm CompID
+SECURITY_SUB_TYPE = '1'      # confirmed by mentor
+SELLER_TRADER = 'ODJFE1'     # confirmed by mentor, real counterparty trader (different firm)
+SELLER_FIRM = 'OD'           # confirmed by mentor, real counterparty firm
 
 @pytest.mark.asyncio
 async def test_fix_two_side():
