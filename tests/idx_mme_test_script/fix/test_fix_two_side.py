@@ -78,7 +78,7 @@ def new_trade_capture_report_2sided(symbol, price, qty, buyer_trader, buyer_firm
             54: fix_oe_50.Side.Buy,
             453: [
                 {447: fix_oe_50.PartyIDSource.Proprietary, 448: buyer_trader, 452: 12},
-                {447: fix_oe_50.PartyIDSource.Proprietary, 448: buyer_firm, 452: 1},
+                {802: [{523: 'ABCD', 803: 4030}], 447: fix_oe_50.PartyIDSource.Proprietary, 448: buyer_firm, 452: 1},
             ],
         },
         {

@@ -71,7 +71,7 @@ def new_trade_capture_report_1sided(symbol, price, side, qty, username, sender_c
             54: fix_oe_50.Side.Buy if side == 'B' else fix_oe_50.Side.Sell,
             453: [   # our identity + the counterparty firm (ContraFirm=17)
                 {447: fix_oe_50.PartyIDSource.Proprietary, 448: username, 452: 12},           # ExecutingTrader
-                {447: fix_oe_50.PartyIDSource.Proprietary, 448: sender_comp_id, 452: 1},      # ExecutingFirm
+                {802: [{523: 'ABCD', 803: 4030}], 447: fix_oe_50.PartyIDSource.Proprietary, 448: sender_comp_id, 452: 1},      # ExecutingFirm
                 {447: fix_oe_50.PartyIDSource.Proprietary, 448: 'CPD0812JVE87994', 452: 24},  # CustomerAccount
                 {447: fix_oe_50.PartyIDSource.Proprietary, 448: CONTRA_FIRM, 452: 17},        # ContraFirm
             ],

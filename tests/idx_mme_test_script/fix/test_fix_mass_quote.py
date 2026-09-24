@@ -58,7 +58,7 @@ def new_mass_quote(symbol, bid_px, offer_px, size, username, sender_comp_id):
 
     mass_quote.NoPartyIDs = [
         {447: fix_oe_50.PartyIDSource.Proprietary, 448: username, 452: 12},
-        {447: fix_oe_50.PartyIDSource.Proprietary, 448: sender_comp_id, 452: 1},
+        {802: [{523: 'ABCD', 803: 4030}], 447: fix_oe_50.PartyIDSource.Proprietary, 448: sender_comp_id, 452: 1},
     ]
 
     mass_quote.NoQuoteSets = [
