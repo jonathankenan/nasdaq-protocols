@@ -4,6 +4,7 @@ import pytest
 
 from nasdaq_mme_idx import fix_oe_50
 from tests.idx_mme_helper import utils as hlp
+from tests.idx_mme_helper.price_fraction import price_fraction
 
 ## Test case scenario: Amend (cancel/replace) an existing order, based on spec section 2.3 ##
 
@@ -40,7 +41,7 @@ async def test_fix_amend_message():
             f"Order not accepted, cannot proceed to amend: {placed_report}"
 
         # 2. Amend the order: same qty, price moved from 490 -> 491
-        new_price = order['Price'] + 1
+        new_price = order['Price'] + price_fraction(order['Price'])
         amend_request = new_amend_request(
             orig_cl_ord_id=enter_order.ClOrdID,
             symbol=order['Symbol'],

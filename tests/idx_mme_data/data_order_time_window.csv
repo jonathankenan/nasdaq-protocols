@@ -1,5 +1,5 @@
 # Kolom (pisah tanda pipe): symbol, price, side (B=Buy / S=Sell), qty, order_type (L=Limit / M=Market, opsional, default L)
-BANK_RG|490|B|1|L
-BANK_RG|488|B|1|L
-BANK_RG|486|B|1|L
+BANK_RG|284|B|1|L
+BANK_RG|282|B|1|L
+BANK_RG|280|B|1|L
 BANK_RG|0|S|1|M

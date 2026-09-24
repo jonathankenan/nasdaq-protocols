@@ -4,6 +4,7 @@ import pytest
 
 from nasdaq_mme_idx import fix_oe_50
 from tests.idx_mme_helper import utils as hlp
+from tests.idx_mme_helper.price_fraction import price_fraction
 
 ## Test case scenario: Send a mass quote (1 instrument, 1 price level), based on spec section 3.1/3.2 ##
 
@@ -28,8 +29,8 @@ async def test_fix_mass_quote():
     try:
         mass_quote = new_mass_quote(
             symbol=order['Symbol'],
-            bid_px=order['Price'] - 1,
-            offer_px=order['Price'] + 1,
+            bid_px=order['Price'] - price_fraction(order['Price']),
+            offer_px=order['Price'] + price_fraction(order['Price']),
             size=order['OrderQty'],
             username=user['username'],
             sender_comp_id=user['sender_comp_id'],

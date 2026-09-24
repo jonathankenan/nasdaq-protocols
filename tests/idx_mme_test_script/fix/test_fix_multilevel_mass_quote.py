@@ -4,17 +4,14 @@ import pytest
 
 from nasdaq_mme_idx import fix_oe_50
 from tests.idx_mme_helper import utils as hlp
+from tests.idx_mme_helper.price_fraction import price_fraction
 
 ## Test case scenario: Send a mass quote with multiple price levels (same message as test_fix_mass_quote, but NoQuoteEntries > 1) ##
 
 LOG_FILE = hlp.setup_logging()
 
-# 3 price levels: (offset from base price, size)
-PRICE_LEVELS = [
-    (1, 1.0),
-    (2, 1.0),
-    (3, 1.0),
-]
+NUM_LEVELS = 3
+LEVEL_SIZE = 1.0
 
 @pytest.mark.asyncio
 async def test_fix_multilevel_mass_quote():
@@ -40,7 +37,7 @@ async def test_fix_multilevel_mass_quote():
             sender_comp_id=user['sender_comp_id'],
         )
         logging.info(f"Sending multilevel MassQuote, QuoteID: {mass_quote.QuoteID}, "
-                     f"levels: {len(PRICE_LEVELS)}")
+                     f"levels: {NUM_LEVELS}")
         fix_session.send_msg(mass_quote)
 
         ack = await fix_session.receive_msg()
@@ -49,22 +46,25 @@ async def test_fix_multilevel_mass_quote():
         assert isinstance(ack, fix_oe_50.MassQuoteAck), f"Unexpected response type: {ack}"
         assert ack.QuoteStatus == fix_oe_50.QuoteStatus.Accepted, \
             f"MassQuote rejected: {ack}"
-        logging.info(f"MassQuote {mass_quote.QuoteID} with {len(PRICE_LEVELS)} levels accepted.")
+        logging.info(f"MassQuote {mass_quote.QuoteID} with {NUM_LEVELS} levels accepted.")
     finally:
         await fix_session.close()
 
 
 def new_multilevel_mass_quote(symbol, base_price, username, sender_comp_id):
-    # The best price level must be listed first.
+    # The best price level must be listed first. Each level steps out by 1 more
+    # tick (price fraction), so offsets always land on a valid price.
+    fraction = price_fraction(base_price)
     quote_entries = []
-    for offset, size in PRICE_LEVELS:
+    for level in range(1, NUM_LEVELS + 1):
+        offset = level * fraction
         quote_entries.append({
             299: hlp.generate_ordertoken(),        # QuoteEntryID
             55: symbol,                             # Symbol
             132: base_price - offset,               # BidPx (gets lower each level)
             133: base_price + offset,               # OfferPx (gets higher each level)
-            134: size,                              # BidSize
-            135: size,                              # OfferSize
+            134: LEVEL_SIZE,                        # BidSize
+            135: LEVEL_SIZE,                        # OfferSize
             528: fix_oe_50.OrderCapacity.Agency,
         })
 
