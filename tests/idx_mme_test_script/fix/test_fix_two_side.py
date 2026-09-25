@@ -15,7 +15,7 @@ SELLER_FIRM = 'OD'           # confirmed by mentor, real counterparty firm
 
 @pytest.mark.asyncio
 async def test_fix_two_side():
-    credentials = hlp.load_credentials('tests/idx_mme_data/credential_order_limit.csv')
+    credentials = hlp.load_credentials('tests/idx_mme_data/credential_nego.csv')
     orders = hlp.load_orders('tests/idx_mme_data/data_order_limit.csv')
 
     user = credentials[0]
@@ -85,7 +85,7 @@ def new_trade_capture_report_2sided(symbol, price, qty, buyer_trader, buyer_firm
             54: fix_oe_50.Side.Sell,
             453: [
                 {447: fix_oe_50.PartyIDSource.Proprietary, 448: SELLER_TRADER, 452: 12},
-                {447: fix_oe_50.PartyIDSource.Proprietary, 448: SELLER_FIRM, 452: 1},
+                {802: [{523: 'ABCD', 803: 4030}], 447: fix_oe_50.PartyIDSource.Proprietary, 448: SELLER_FIRM, 452: 1},
             ],
         },
     ]

@@ -14,7 +14,7 @@ CONTRA_FIRM = 'OD'        # confirmed by mentor, real counterparty firm (user OD
 
 @pytest.mark.asyncio
 async def test_fix_one_side():
-    credentials = hlp.load_credentials('tests/idx_mme_data/credential_order_limit.csv')
+    credentials = hlp.load_credentials('tests/idx_mme_data/credential_nego.csv')
     orders = hlp.load_orders('tests/idx_mme_data/data_order_limit.csv')
 
     user = credentials[0]

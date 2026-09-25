@@ -80,6 +80,22 @@ async def test_fix_send_order_time_range():
             order_idx += 1
             await asyncio.sleep(DELAY_BETWEEN_ORDERS)
 
+        # Drain any trailing ExecutionReports still in flight after the window closes
+        while True:
+            try:
+                exec_report = await asyncio.wait_for(fix_session.receive_msg(), timeout=1.0)
+            except asyncio.TimeoutError:
+                break
+            if not exec_report:
+                break
+            status = exec_report.OrdStatus
+            logging.info(
+                f"[{user['username']}] Order: {exec_report.Symbol} "
+                f"ClOrdID: {exec_report.ClOrdID} status: {status} (drained after window close)"
+            )
+            if status in status_count:
+                status_count[status] += 1
+
         logging.info(
             f"[{user['username']}] SUMMARY STATUS --> "
             f"New(0): {status_count['0']}, Rejected(8): {status_count['8']}, "
