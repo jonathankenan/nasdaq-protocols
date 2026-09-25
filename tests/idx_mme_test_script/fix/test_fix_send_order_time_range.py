@@ -84,7 +84,7 @@ async def test_fix_send_order_time_range():
         while True:
             try:
                 exec_report = await asyncio.wait_for(fix_session.receive_msg(), timeout=1.0)
-            except asyncio.TimeoutError:
+            except (asyncio.TimeoutError, EOFError):
                 break
             if not exec_report:
                 break
