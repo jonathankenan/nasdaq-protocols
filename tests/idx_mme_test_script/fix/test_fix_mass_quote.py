@@ -11,18 +11,19 @@ LOG_FILE = hlp.setup_logging()
 
 
 def load_mass_quotes(file_path):
-    # Format: symbol|bid_price|offer_price|qty -- bid/offer diisi manual, tidak dihitung dari price_fraction
+    # Format: symbol|bid_price|offer_price|bid_qty|offer_qty -- semua diisi manual, tidak dihitung dari price_fraction
     quotes = []
     with open(file_path, 'r') as f:
         for line in f:
             parts = line.strip().split('|')
-            if len(parts) < 4:
+            if len(parts) < 5:
                 continue
             quotes.append({
                 'Symbol': parts[0],
                 'BidPx': float(parts[1]),
                 'OfferPx': float(parts[2]),
-                'Qty': float(parts[3]),
+                'BidQty': float(parts[3]),
+                'OfferQty': float(parts[4]),
             })
     return quotes
 
@@ -48,7 +49,8 @@ async def test_fix_mass_quote():
             symbol=quote_data['Symbol'],
             bid_px=quote_data['BidPx'],
             offer_px=quote_data['OfferPx'],
-            size=quote_data['Qty'],
+            bid_qty=quote_data['BidQty'],
+            offer_qty=quote_data['OfferQty'],
             username=user['username'],
             sender_comp_id=user['sender_comp_id'],
         )
@@ -66,7 +68,7 @@ async def test_fix_mass_quote():
         await fix_session.close()
 
 
-def new_mass_quote(symbol, bid_px, offer_px, size, username, sender_comp_id):
+def new_mass_quote(symbol, bid_px, offer_px, bid_qty, offer_qty, username, sender_comp_id):
     mass_quote: fix_oe_50.MassQuote = fix_oe_50.MassQuote()
     mass_quote.QuoteID = hlp.generate_ordertoken()
     mass_quote.QuoteType = fix_oe_50.QuoteType.Tradeable
@@ -89,8 +91,8 @@ def new_mass_quote(symbol, bid_px, offer_px, size, username, sender_comp_id):
                     55: symbol,                        # Symbol
                     132: bid_px,                        # BidPx
                     133: offer_px,                       # OfferPx
-                    134: size,                          # BidSize
-                    135: size,                          # OfferSize
+                    134: bid_qty,                       # BidSize
+                    135: offer_qty,                     # OfferSize
                     528: fix_oe_50.OrderCapacity.Agency,
                 }
             ],

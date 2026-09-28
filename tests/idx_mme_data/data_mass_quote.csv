@@ -1,2 +1,2 @@
-# Kolom (pisah tanda pipe): symbol, bid_price, offer_price, qty
-BANK_RG|280|284|1
+# Kolom (pisah tanda pipe): symbol, bid_price, offer_price, bid_qty, offer_qty
+BANK_RG|280|284|1|1

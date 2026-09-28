@@ -11,18 +11,19 @@ LOG_FILE = hlp.setup_logging()
 
 
 def load_multilevel_quotes(file_path):
-    # Format: symbol|bid_price|offer_price|qty -- 1 baris = 1 level, diisi manual
+    # Format: symbol|bid_price|offer_price|bid_qty|offer_qty -- 1 baris = 1 level, diisi manual
     levels = []
     with open(file_path, 'r') as f:
         for line in f:
             parts = line.strip().split('|')
-            if len(parts) < 4:
+            if len(parts) < 5:
                 continue
             levels.append({
                 'Symbol': parts[0],
                 'BidPx': float(parts[1]),
                 'OfferPx': float(parts[2]),
-                'Qty': float(parts[3]),
+                'BidQty': float(parts[3]),
+                'OfferQty': float(parts[4]),
             })
     return levels
 
@@ -72,8 +73,8 @@ def new_multilevel_mass_quote(levels, username, sender_comp_id):
             55: level['Symbol'],                    # Symbol
             132: level['BidPx'],                    # BidPx
             133: level['OfferPx'],                  # OfferPx
-            134: level['Qty'],                      # BidSize
-            135: level['Qty'],                      # OfferSize
+            134: level['BidQty'],                   # BidSize
+            135: level['OfferQty'],                  # OfferSize
             528: fix_oe_50.OrderCapacity.Agency,
         })
 
