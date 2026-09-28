@@ -4,6 +4,7 @@ import pytest
 
 from nasdaq_mme_idx import fix_oe_50
 from tests.idx_mme_helper import utils as hlp
+from tests.idx_mme_helper.state import save_state
 
 ## Test case scenario: Sending a single limit order (create order RG/TN) ##
 
@@ -39,6 +40,13 @@ async def test_fix_send_order_limit():
 
         if validate:
             logging.info(f"Order for user {user['username']} successfully placed.")
+            # Save so a separate amend/withdraw run can act on this exact order.
+            save_state('order_limit', {
+                'ClOrdID': enter_order.ClOrdID,
+                'Symbol': order['Symbol'],
+                'Side': order['Side'],
+                'OrderQty': order['OrderQty'],
+            })
         else:
             logging.error(f"Order for user {user['username']} failed validation.")
 

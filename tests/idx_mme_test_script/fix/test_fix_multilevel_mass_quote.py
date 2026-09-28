@@ -4,6 +4,7 @@ import pytest
 
 from nasdaq_mme_idx import fix_oe_50
 from tests.idx_mme_helper import utils as hlp
+from tests.idx_mme_helper.state import save_state
 
 ## Test case scenario: Send a mass quote with multiple price levels (same message as test_fix_mass_quote, but NoQuoteEntries > 1) ##
 
@@ -60,6 +61,11 @@ async def test_fix_multilevel_mass_quote():
         assert ack.QuoteStatus == fix_oe_50.QuoteStatus.Accepted, \
             f"MassQuote rejected: {ack}"
         logging.info(f"MassQuote {mass_quote.QuoteID} with {len(levels)} levels accepted.")
+        # Save so a separate amend/withdraw run can act on this exact quote.
+        save_state('multilevel_mass_quote', {
+            'QuoteID': mass_quote.QuoteID,
+            'Symbol': levels[0]['Symbol'],
+        })
     finally:
         await fix_session.close()
 

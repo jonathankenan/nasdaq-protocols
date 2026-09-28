@@ -4,10 +4,12 @@ import pytest
 
 from nasdaq_mme_idx import fix_oe_50
 from tests.idx_mme_helper import utils as hlp
+from tests.idx_mme_helper.state import load_state
 
 ## Test case scenario: Amend a mass quote by re-sending a new MassQuote with a different price ##
 ## for the same instrument/account. There is no dedicated "amend quote" message in FIX -- ##
 ## resending a MassQuote is the standard way to update a working quote. ##
+## Requires a quote already placed by test_fix_mass_quote.py in a separate run. ##
 
 LOG_FILE = hlp.setup_logging()
 
@@ -33,12 +35,15 @@ def load_mass_quotes(file_path):
 @pytest.mark.asyncio
 async def test_fix_amend_mass_quote():
     credentials = hlp.load_credentials('tests/idx_mme_data/credential_order_limit.csv')
-    quotes = load_mass_quotes('tests/idx_mme_data/data_mass_quote.csv')
     amended_quotes = load_mass_quotes('tests/idx_mme_data/data_amend_mass_quote.csv')
 
     user = credentials[0]
-    quote_data = quotes[0]
     amend_data = amended_quotes[0]
+
+    try:
+        existing_quote = load_state('mass_quote')
+    except FileNotFoundError:
+        assert False, "No existing quote found. Run test_fix_mass_quote.py first."
 
     fix_session = await hlp.loginFIXFromFile(
         '172.18.2.162', '8200', user['username'], user['password'], user['sender_comp_id']
@@ -49,26 +54,8 @@ async def test_fix_amend_mass_quote():
         assert False, "Failed to connect/login."
 
     try:
-        # 1. Place the initial quote
-        first_quote = new_mass_quote(
-            symbol=quote_data['Symbol'],
-            bid_px=quote_data['BidPx'],
-            offer_px=quote_data['OfferPx'],
-            bid_qty=quote_data['BidQty'],
-            offer_qty=quote_data['OfferQty'],
-            username=user['username'],
-            sender_comp_id=user['sender_comp_id'],
-        )
-        logging.info(f"Sending initial MassQuote, QuoteID: {first_quote.QuoteID}")
-        fix_session.send_msg(first_quote)
-
-        ack = await fix_session.receive_msg()
-        logging.info(f"Initial MassQuoteAck received: {ack}")
-        assert isinstance(ack, fix_oe_50.MassQuoteAck), f"Unexpected response type: {ack}"
-        assert ack.QuoteStatus == fix_oe_50.QuoteStatus.Accepted, \
-            f"Initial MassQuote not accepted, cannot proceed to amend: {ack}"
-
-        # 2. "Amend" by re-sending a new MassQuote for the same instrument with the new price from CSV
+        # "Amend" the quote placed earlier by test_fix_mass_quote.py by re-sending a new
+        # MassQuote for the same instrument/account with the new price from CSV.
         amend_quote = new_mass_quote(
             symbol=amend_data['Symbol'],
             bid_px=amend_data['BidPx'],
@@ -78,7 +65,8 @@ async def test_fix_amend_mass_quote():
             username=user['username'],
             sender_comp_id=user['sender_comp_id'],
         )
-        logging.info(f"Sending amended MassQuote, QuoteID: {amend_quote.QuoteID}, "
+        logging.info(f"Amending MassQuote (previously QuoteID: {existing_quote['QuoteID']}), "
+                     f"new QuoteID: {amend_quote.QuoteID}, "
                      f"new BidPx: {amend_data['BidPx']}, new OfferPx: {amend_data['OfferPx']}")
         fix_session.send_msg(amend_quote)
 
@@ -88,7 +76,7 @@ async def test_fix_amend_mass_quote():
         assert isinstance(amend_ack, fix_oe_50.MassQuoteAck), f"Unexpected response type: {amend_ack}"
         assert amend_ack.QuoteStatus == fix_oe_50.QuoteStatus.Accepted, \
             f"Amended MassQuote rejected: {amend_ack}"
-        logging.info(f"MassQuote for {quote_data['Symbol']} successfully amended (re-quoted).")
+        logging.info(f"MassQuote for {amend_data['Symbol']} successfully amended (re-quoted).")
     finally:
         await fix_session.close()
 

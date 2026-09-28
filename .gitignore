@@ -162,3 +162,6 @@ cython_debug/
 
 # macOS
 .DS_Store
+
+# Runtime state passed between separate pytest runs (amend/withdraw needs the order/quote from a producer run)
+tests/idx_mme_data/state/
