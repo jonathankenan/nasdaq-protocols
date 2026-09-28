@@ -44,6 +44,10 @@ async def send_orders_for_user(user, orders, duration_seconds=120, delay_between
         symbol_count = {}
         # An order can get more than 1 ExecutionReport (e.g. New then Filled), so track
         # unique ClOrdIDs that got at least one report, instead of summing report counts.
+        # Extra reports can also arrive for orders resting from a *previous* run (same-day,
+        # never withdrawn) getting matched now -- those are expected, not a bug, so we only
+        # check that every order WE sent this run got at least one report (subset check).
+        sent_cl_ord_ids = set()
         reported_cl_ord_ids = set()
 
         logging.info(f"Start sending orders for {user['username']} at {start_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]} for {user['duration_minutes']} minute(s)...")
@@ -66,6 +70,7 @@ async def send_orders_for_user(user, orders, duration_seconds=120, delay_between
             try:
                 fix_session.send_msg(enter_order)
                 send_count += 1
+                sent_cl_ord_ids.add(enter_order.ClOrdID)
 
                 symbol = enter_order.Symbol
                 symbol_count[symbol] = symbol_count.get(symbol, 0) + 1
@@ -122,8 +127,9 @@ async def send_orders_for_user(user, orders, duration_seconds=120, delay_between
             logging.info(f"[{user['username']}] {sym}: {cnt} order(s)")
         logging.info(f"Finished sending for {user['username']} \n Started Time at {start_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]}. \n Finished Time at {end_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]}. Total sent: {send_count} orders in {duration_seconds}s")
 
-        assert len(reported_cl_ord_ids) == send_count, \
-            f"Order tracking mismatch: sent {send_count} orders but only {len(reported_cl_ord_ids)} got at least one ExecutionReport."
+        missing = sent_cl_ord_ids - reported_cl_ord_ids
+        assert not missing, \
+            f"{len(missing)} of {send_count} orders never got any ExecutionReport: {missing}"
 
     except Exception as e:
         logging.error(f"Error in user task {user['username']}: {e}")
