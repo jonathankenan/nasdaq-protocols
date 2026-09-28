@@ -65,7 +65,7 @@ def new_quote_cancel(quote_id, symbol, username, sender_comp_id):
     # QuoteReqID is marked optional in the generic FIX dictionary, but MME rejects the message without it.
     cancel.QuoteReqID = hlp.generate_ordertoken()
     cancel.QuoteID = quote_id
-    cancel.QuoteCancelType = fix_oe_50.QuoteCancelType.CancelForOneOrMoreSecurities
+    cancel.QuoteCancelType = fix_oe_50.QuoteCancelType.CancelSpecifiedSingleQuote
     cancel.QuoteType = fix_oe_50.QuoteType.Tradeable
 
     cancel.NoPartyIDs = [
