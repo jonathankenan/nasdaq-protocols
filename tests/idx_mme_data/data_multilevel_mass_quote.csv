@@ -1,0 +1,4 @@
+# Kolom (pisah tanda pipe): symbol, bid_price, offer_price, qty -- 1 baris = 1 level, urut dari yang terbaik
+BANK_RG|281|283|1
+BANK_RG|280|284|1
+BANK_RG|279|285|1

@@ -4,22 +4,35 @@ import pytest
 
 from nasdaq_mme_idx import fix_oe_50
 from tests.idx_mme_helper import utils as hlp
-from tests.idx_mme_helper.price_fraction import price_fraction
 
 ## Test case scenario: Send a mass quote with multiple price levels (same message as test_fix_mass_quote, but NoQuoteEntries > 1) ##
 
 LOG_FILE = hlp.setup_logging()
 
-NUM_LEVELS = 3
-LEVEL_SIZE = 1.0
+
+def load_multilevel_quotes(file_path):
+    # Format: symbol|bid_price|offer_price|qty -- 1 baris = 1 level, diisi manual
+    levels = []
+    with open(file_path, 'r') as f:
+        for line in f:
+            parts = line.strip().split('|')
+            if len(parts) < 4:
+                continue
+            levels.append({
+                'Symbol': parts[0],
+                'BidPx': float(parts[1]),
+                'OfferPx': float(parts[2]),
+                'Qty': float(parts[3]),
+            })
+    return levels
+
 
 @pytest.mark.asyncio
 async def test_fix_multilevel_mass_quote():
-    credentials = hlp.load_credentials('tests/idx_mme_data/credential_order_limit.csv')
-    orders = hlp.load_orders('tests/idx_mme_data/data_order_limit.csv')
+    credentials = hlp.load_credentials('tests/idx_mme_data/credential_multilevel_mass_quote.csv')
+    levels = load_multilevel_quotes('tests/idx_mme_data/data_multilevel_mass_quote.csv')
 
     user = credentials[0]
-    order = orders[0]
 
     fix_session = await hlp.loginFIXFromFile(
         '172.18.2.162', '8200', user['username'], user['password'], user['sender_comp_id']
@@ -31,13 +44,12 @@ async def test_fix_multilevel_mass_quote():
 
     try:
         mass_quote = new_multilevel_mass_quote(
-            symbol=order['Symbol'],
-            base_price=order['Price'],
+            levels=levels,
             username=user['username'],
             sender_comp_id=user['sender_comp_id'],
         )
         logging.info(f"Sending multilevel MassQuote, QuoteID: {mass_quote.QuoteID}, "
-                     f"levels: {NUM_LEVELS}")
+                     f"levels: {len(levels)}")
         fix_session.send_msg(mass_quote)
 
         ack = await fix_session.receive_msg()
@@ -46,25 +58,22 @@ async def test_fix_multilevel_mass_quote():
         assert isinstance(ack, fix_oe_50.MassQuoteAck), f"Unexpected response type: {ack}"
         assert ack.QuoteStatus == fix_oe_50.QuoteStatus.Accepted, \
             f"MassQuote rejected: {ack}"
-        logging.info(f"MassQuote {mass_quote.QuoteID} with {NUM_LEVELS} levels accepted.")
+        logging.info(f"MassQuote {mass_quote.QuoteID} with {len(levels)} levels accepted.")
     finally:
         await fix_session.close()
 
 
-def new_multilevel_mass_quote(symbol, base_price, username, sender_comp_id):
-    # The best price level must be listed first. Each level steps out by 1 more
-    # tick (price fraction), so offsets always land on a valid price.
-    fraction = price_fraction(base_price)
+def new_multilevel_mass_quote(levels, username, sender_comp_id):
+    # The best price level must be listed first; levels list is taken as-is from the CSV.
     quote_entries = []
-    for level in range(1, NUM_LEVELS + 1):
-        offset = level * fraction
+    for level in levels:
         quote_entries.append({
             299: hlp.generate_ordertoken(),        # QuoteEntryID
-            55: symbol,                             # Symbol
-            132: base_price - offset,               # BidPx (gets lower each level)
-            133: base_price + offset,               # OfferPx (gets higher each level)
-            134: LEVEL_SIZE,                        # BidSize
-            135: LEVEL_SIZE,                        # OfferSize
+            55: level['Symbol'],                    # Symbol
+            132: level['BidPx'],                    # BidPx
+            133: level['OfferPx'],                  # OfferPx
+            134: level['Qty'],                      # BidSize
+            135: level['Qty'],                      # OfferSize
             528: fix_oe_50.OrderCapacity.Agency,
         })
 
