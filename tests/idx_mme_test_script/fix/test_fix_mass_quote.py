@@ -4,19 +4,36 @@ import pytest
 
 from nasdaq_mme_idx import fix_oe_50
 from tests.idx_mme_helper import utils as hlp
-from tests.idx_mme_helper.price_fraction import price_fraction
 
 ## Test case scenario: Send a mass quote (1 instrument, 1 price level), based on spec section 3.1/3.2 ##
 
 LOG_FILE = hlp.setup_logging()
 
+
+def load_mass_quotes(file_path):
+    # Format: symbol|bid_price|offer_price|qty -- bid/offer diisi manual, tidak dihitung dari price_fraction
+    quotes = []
+    with open(file_path, 'r') as f:
+        for line in f:
+            parts = line.strip().split('|')
+            if len(parts) < 4:
+                continue
+            quotes.append({
+                'Symbol': parts[0],
+                'BidPx': float(parts[1]),
+                'OfferPx': float(parts[2]),
+                'Qty': float(parts[3]),
+            })
+    return quotes
+
+
 @pytest.mark.asyncio
 async def test_fix_mass_quote():
     credentials = hlp.load_credentials('tests/idx_mme_data/credential_order_limit.csv')
-    orders = hlp.load_orders('tests/idx_mme_data/data_order_limit.csv')
+    quotes = load_mass_quotes('tests/idx_mme_data/data_mass_quote.csv')
 
     user = credentials[0]
-    order = orders[0]
+    quote_data = quotes[0]
 
     fix_session = await hlp.loginFIXFromFile(
         '172.18.2.162', '8200', user['username'], user['password'], user['sender_comp_id']
@@ -28,10 +45,10 @@ async def test_fix_mass_quote():
 
     try:
         mass_quote = new_mass_quote(
-            symbol=order['Symbol'],
-            bid_px=order['Price'] - price_fraction(order['Price']),
-            offer_px=order['Price'] + price_fraction(order['Price']),
-            size=order['OrderQty'],
+            symbol=quote_data['Symbol'],
+            bid_px=quote_data['BidPx'],
+            offer_px=quote_data['OfferPx'],
+            size=quote_data['Qty'],
             username=user['username'],
             sender_comp_id=user['sender_comp_id'],
         )
