@@ -42,6 +42,9 @@ async def send_orders_for_user(user, orders, duration_seconds=120, delay_between
         send_count = 0
         status_count = {'8': 0, '0': 0, '1': 0, '2': 0, '4': 0, 'C': 0}
         symbol_count = {}
+        # An order can get more than 1 ExecutionReport (e.g. New then Filled), so track
+        # unique ClOrdIDs that got at least one report, instead of summing report counts.
+        reported_cl_ord_ids = set()
 
         logging.info(f"Start sending orders for {user['username']} at {start_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]} for {user['duration_minutes']} minute(s)...")
 
@@ -76,6 +79,7 @@ async def send_orders_for_user(user, orders, duration_seconds=120, delay_between
                         logging.info(f"[{user['username']}] Order: {exec_report.Symbol} ClOrdID: {exec_report.ClOrdID} price: {exec_report.Price} status: {exec_report.OrdStatus} at {current_time}")
                         if status in status_count:
                             status_count[status] += 1
+                        reported_cl_ord_ids.add(exec_report.ClOrdID)
                 except Exception as e:
                     logging.warning(f"[{user['username']}] No ExecutionReport or error reading response: {e}")
 
@@ -100,15 +104,17 @@ async def send_orders_for_user(user, orders, duration_seconds=120, delay_between
             )
             if status in status_count:
                 status_count[status] += 1
+            reported_cl_ord_ids.add(exec_report.ClOrdID)
 
         end_time = datetime.now()
         total_counted = sum(status_count.values())
         logging.info(
             f"[{user['username']}] SUMMARY STATUS --> "
             f"New(0): {status_count['0']}, "
-            f"Rejected(8): {status_count['8']}, "
-            f"Filled(1): {status_count['1']}, "
+            f"PartiallyFilled(1): {status_count['1']}, "
+            f"Filled(2): {status_count['2']}, "
             f"Canceled(4): {status_count['4']}, "
+            f"Rejected(8): {status_count['8']}, "
             f"Close(C): {status_count['C']}. Total counted: {total_counted}"
         )
         logging.info(f"[{user['username']}] SUMMARY ORDER PER SAHAM:")
@@ -116,8 +122,8 @@ async def send_orders_for_user(user, orders, duration_seconds=120, delay_between
             logging.info(f"[{user['username']}] {sym}: {cnt} order(s)")
         logging.info(f"Finished sending for {user['username']} \n Started Time at {start_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]}. \n Finished Time at {end_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]}. Total sent: {send_count} orders in {duration_seconds}s")
 
-        assert total_counted == send_count, \
-            f"Status count mismatch: sent {send_count} orders but only {total_counted} statuses accounted for."
+        assert len(reported_cl_ord_ids) == send_count, \
+            f"Order tracking mismatch: sent {send_count} orders but only {len(reported_cl_ord_ids)} got at least one ExecutionReport."
 
     except Exception as e:
         logging.error(f"Error in user task {user['username']}: {e}")
