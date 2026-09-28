@@ -4,7 +4,6 @@ import pytest
 
 from nasdaq_mme_idx import fix_oe_50
 from tests.idx_mme_helper import utils as hlp
-from tests.idx_mme_helper.price_fraction import price_fraction
 
 ## Test case scenario: Amend (cancel/replace) an existing order, based on spec section 2.3 ##
 
@@ -14,9 +13,11 @@ LOG_FILE = hlp.setup_logging()
 async def test_fix_amend_message():
     credentials = hlp.load_credentials('tests/idx_mme_data/credential_order_limit.csv')
     orders = hlp.load_orders('tests/idx_mme_data/data_order_limit.csv')
+    amended_orders = hlp.load_orders('tests/idx_mme_data/data_amend_order_limit.csv')
 
     user = credentials[0]
     order = orders[0]
+    amend_order_data = amended_orders[0]
 
     fix_session = await hlp.loginFIXFromFile(
         '172.18.2.162', '8200', user['username'], user['password'], user['sender_comp_id']
@@ -40,18 +41,18 @@ async def test_fix_amend_message():
         assert placed_report.OrdStatus == fix_oe_50.OrdStatus.New, \
             f"Order not accepted, cannot proceed to amend: {placed_report}"
 
-        # 2. Amend the order: same qty, price moved from 490 -> 491
-        new_price = order['Price'] + price_fraction(order['Price'])
+        # 2. Amend the order: new price/qty taken from data_amend_order_limit.csv
         amend_request = new_amend_request(
             orig_cl_ord_id=enter_order.ClOrdID,
-            symbol=order['Symbol'],
-            side=order['Side'],
-            qty=order['OrderQty'],
-            price=new_price,
+            symbol=amend_order_data['Symbol'],
+            side=amend_order_data['Side'],
+            qty=amend_order_data['OrderQty'],
+            price=amend_order_data['Price'],
             username=user['username'],
             sender_comp_id=user['sender_comp_id'],
         )
-        logging.info(f"Sending amend request for OrigClOrdID: {enter_order.ClOrdID}, new price: {new_price}")
+        logging.info(f"Sending amend request for OrigClOrdID: {enter_order.ClOrdID}, "
+                     f"new price: {amend_order_data['Price']}")
         fix_session.send_msg(amend_request)
 
         amend_response = await fix_session.receive_msg()

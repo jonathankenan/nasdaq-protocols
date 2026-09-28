@@ -1,0 +1,4 @@
+# Kolom (pisah tanda pipe): symbol, bid_price, offer_price, bid_qty, offer_qty -- nilai baru setelah amend, 1 baris = 1 level
+BANK_RG|282|284|1|1
+BANK_RG|281|285|1|1
+BANK_RG|280|286|1|1
